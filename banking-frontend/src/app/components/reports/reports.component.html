@@ -1,0 +1,114 @@
+<div class="reports-container">
+  <div class="header">
+    <h1>Reportes</h1>
+  </div>
+
+  <div class="form-container">
+    <h2>Estado de Cuenta</h2>
+    
+    <div class="error-message" *ngIf="errorMessage" [innerHTML]="errorMessage"></div>
+
+    <form>
+      <div class="form-group">
+        <label>Cliente *</label>
+        <select [(ngModel)]="reportParams.clientId" name="clientId">
+          <option [value]="0">Seleccionar cliente</option>
+          <option *ngFor="let client of clients" [value]="client.id">
+            {{ client.name }} ({{ client.identification }})
+          </option>
+        </select>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Fecha Inicio *</label>
+          <input type="datetime-local" [(ngModel)]="reportParams.startDate" name="startDate" />
+        </div>
+
+        <div class="form-group">
+          <label>Fecha Fin *</label>
+          <input type="datetime-local" [(ngModel)]="reportParams.endDate" name="endDate" />
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Formato</label>
+        <select [(ngModel)]="reportParams.format" name="format">
+          <option value="json">JSON (Vista)</option>
+          <option value="pdf">PDF (Descarga)</option>
+        </select>
+      </div>
+
+      <button type="button" class="btn-generate" (click)="generateReport()" [disabled]="isLoading">
+        {{ isLoading ? 'Generando...' : 'Generar Reporte' }}
+      </button>
+    </form>
+  </div>
+
+  <!-- Report Results for JSON -->
+  <div class="report-results" *ngIf="reportData && reportData.length > 0">
+    <h3>Reporte de Estado de Cuenta</h3>
+    
+    <div class="search-container">
+      <input 
+        type="text" 
+        placeholder="Buscar por cuenta o tipo de cuenta" 
+        [(ngModel)]="searchTerm"
+        (input)="filterReportData()"
+        class="search-input"
+      />
+    </div>
+    
+    <div class="table-container">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Fecha</th>
+            <th>Cliente</th>
+            <th>Número Cuenta</th>
+            <th>Tipo</th>
+            <th>Saldo Inicial</th>
+            <th>Estado</th>
+            <th>Movimiento</th>
+            <th>Saldo Disponible</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let item of filteredReportData">
+            <td>{{ item.date | date:'dd/MM/yyyy HH:mm' }}</td>
+            <td>{{ item.client }}</td>
+            <td>{{ item.accountNumber }}</td>
+            <td>{{ item.type }}</td>
+            <td>${{ item.initialBalance | number:'1.2-2' }}</td>
+            <td>
+              <span [class]="item.status ? 'status-active' : 'status-inactive'">
+                {{ item.status ? 'Activa' : 'Inactiva' }}
+              </span>
+            </td>
+            <td [class]="parseFloat(item.movement) >= 0 ? 'value-positive' : 'value-negative'">
+              ${{ item.movement }}
+            </td>
+            <td>${{ item.availableBalance | number:'1.2-2' }}</td>
+          </tr>
+          <tr *ngIf="filteredReportData && filteredReportData.length === 0">
+            <td colspan="8" class="no-data">No se encontraron resultados</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="report-results" *ngIf="reportData && reportData.length === 0">
+    <div class="no-data">No hay movimientos en el período seleccionado</div>
+  </div>
+
+  <!-- PDF Download Result -->
+  <div class="pdf-result" *ngIf="pdfData">
+    <div class="success-message">
+      ✓ PDF generado exitosamente
+    </div>
+    <button class="btn-download" (click)="downloadPdf()">
+      Descargar PDF
+    </button>
+  </div>
+</div>

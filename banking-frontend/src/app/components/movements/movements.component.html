@@ -1,0 +1,103 @@
+<div class="movements-container">
+  <div class="header">
+    <h1>Movimientos</h1>
+  </div>
+
+  <div class="toolbar">
+    <div class="search-box">
+      <input 
+        type="text" 
+        placeholder="Buscar" 
+        [(ngModel)]="searchTerm"
+        (input)="filterMovements()"
+        class="search-input"
+      />
+    </div>
+    <button class="btn-new" (click)="openCreateModal()">Nuevo</button>
+  </div>
+
+  <div class="table-container">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Fecha</th>
+          <th>Tipo de Movimiento</th>
+          <th>Valor</th>
+          <th>Saldo</th>
+          <th>Cuenta</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let movement of filteredMovements">
+          <td>{{ movement.date | date:'dd/MM/yyyy HH:mm' }}</td>
+          <td>{{ movement.movementType }}</td>
+          <td [class]="movement.value >= 0 ? 'value-positive' : 'value-negative'">
+            ${{ movement.value | number:'1.2-2' }}
+          </td>
+          <td>${{ movement.balance | number:'1.2-2' }}</td>
+          <td>{{ movement.accountNumber || getAccountNumber(movement.accountId) }}</td>
+          <td class="actions">
+            <button class="btn-action btn-edit" (click)="openEditModal(movement)">Editar</button>
+            <button class="btn-action btn-delete" (click)="deleteMovement(movement)">Eliminar</button>
+          </td>
+        </tr>
+        <tr *ngIf="filteredMovements.length === 0">
+          <td colspan="6" class="no-data">No hay movimientos registrados</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Modal -->
+  <div class="modal-overlay" *ngIf="showModal" (click)="closeModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>{{ isEditMode ? 'Editar Movimiento' : 'Nuevo Movimiento' }}</h2>
+        <button class="btn-close" (click)="closeModal()">&times;</button>
+      </div>
+
+      <div class="modal-body">
+        <div class="error-message" *ngIf="errorMessage" [innerHTML]="errorMessage"></div>
+        
+        <form>
+          <div class="form-group">
+            <label>Fecha</label>
+            <input type="datetime-local" [(ngModel)]="selectedMovement.date" name="date" />
+          </div>
+
+          <div class="form-group">
+            <label>Tipo de Movimiento *</label>
+            <select [(ngModel)]="selectedMovement.movementType" name="movementType" required>
+              <option value="">Seleccionar</option>
+              <option value="Retiro">Retiro</option>
+              <option value="Deposito">Depósito</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>Valor *</label>
+            <input type="number" [(ngModel)]="selectedMovement.value" name="value" 
+                   step="0.01" required 
+                   placeholder="Negativo para retiro, positivo para depósito" />
+          </div>
+
+          <div class="form-group">
+            <label>Cuenta *</label>
+            <select [(ngModel)]="selectedMovement.accountId" name="accountId" required>
+              <option [value]="0">Seleccionar cuenta</option>
+              <option *ngFor="let account of accounts" [value]="account.id">
+                {{ account.accountNumber }} - {{ account.accountType }}
+              </option>
+            </select>
+          </div>
+        </form>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn-cancel" (click)="closeModal()">Cancelar</button>
+        <button class="btn-save" (click)="saveMovement()">Guardar</button>
+      </div>
+    </div>
+  </div>
+</div>

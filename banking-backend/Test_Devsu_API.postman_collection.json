@@ -1,0 +1,436 @@
+{
+	"info": {
+		"_postman_id": "12345678-1234-1234-1234-123456789012",
+		"name": "Test Devsu API",
+		"description": "API REST para gestión de clientes, cuentas y movimientos bancarios",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Clients",
+			"item": [
+				{
+					"name": "Get All Clients",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/clients",
+							"host": ["{{baseUrl}}"],
+							"path": ["clients"]
+						}
+					}
+				},
+				{
+					"name": "Get Client By ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/clients/1",
+							"host": ["{{baseUrl}}"],
+							"path": ["clients", "1"]
+						}
+					}
+				},
+				{
+					"name": "Create Client",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Jose Lema\",\n  \"gender\": \"Male\",\n  \"age\": 30,\n  \"identification\": \"1234567890\",\n  \"address\": \"Otavalo sn y principal\",\n  \"phone\": \"098254785\",\n  \"clientId\": \"jose.lema\",\n  \"password\": \"1234\",\n  \"status\": true\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/clients",
+							"host": ["{{baseUrl}}"],
+							"path": ["clients"]
+						}
+					}
+				},
+				{
+					"name": "Update Client (PUT)",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Jose Lema Actualizado\",\n  \"gender\": \"Male\",\n  \"age\": 31,\n  \"identification\": \"1234567890\",\n  \"address\": \"Otavalo sn y principal - Actualizado\",\n  \"phone\": \"098254786\",\n  \"clientId\": \"jose.lema\",\n  \"password\": \"newpass123\",\n  \"status\": true\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/clients/1",
+							"host": ["{{baseUrl}}"],
+							"path": ["clients", "1"]
+						}
+					}
+				},
+				{
+					"name": "Partial Update Client (PATCH)",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"phone\": \"098999999\",\n  \"address\": \"Nueva direccion\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/clients/1",
+							"host": ["{{baseUrl}}"],
+							"path": ["clients", "1"]
+						}
+					}
+				},
+				{
+					"name": "Delete Client",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/clients/1",
+							"host": ["{{baseUrl}}"],
+							"path": ["clients", "1"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Accounts",
+			"item": [
+				{
+					"name": "Get All Accounts",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/accounts",
+							"host": ["{{baseUrl}}"],
+							"path": ["accounts"]
+						}
+					}
+				},
+				{
+					"name": "Get Account By ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/accounts/1",
+							"host": ["{{baseUrl}}"],
+							"path": ["accounts", "1"]
+						}
+					}
+				},
+				{
+					"name": "Create Account",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"accountNumber\": \"478758\",\n  \"accountType\": \"Ahorros\",\n  \"initialBalance\": 2000.00,\n  \"status\": true,\n  \"clientId\": 1\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/accounts",
+							"host": ["{{baseUrl}}"],
+							"path": ["accounts"]
+						}
+					}
+				},
+				{
+					"name": "Create Account - Corriente",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"accountNumber\": \"225487\",\n  \"accountType\": \"Corriente\",\n  \"initialBalance\": 1000.00,\n  \"status\": true,\n  \"clientId\": 1\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/accounts",
+							"host": ["{{baseUrl}}"],
+							"path": ["accounts"]
+						}
+					}
+				},
+				{
+					"name": "Update Account (PUT)",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"accountNumber\": \"478758\",\n  \"accountType\": \"Corriente\",\n  \"initialBalance\": 2500.00,\n  \"status\": true,\n  \"clientId\": 1\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/accounts/1",
+							"host": ["{{baseUrl}}"],
+							"path": ["accounts", "1"]
+						}
+					}
+				},
+				{
+					"name": "Partial Update Account (PATCH)",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"accountType\": \"Corriente\",\n  \"status\": false\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/accounts/1",
+							"host": ["{{baseUrl}}"],
+							"path": ["accounts", "1"]
+						}
+					}
+				},
+				{
+					"name": "Delete Account",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/accounts/1",
+							"host": ["{{baseUrl}}"],
+							"path": ["accounts", "1"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Movements",
+			"item": [
+				{
+					"name": "Get All Movements",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/movements",
+							"host": ["{{baseUrl}}"],
+							"path": ["movements"]
+						}
+					}
+				},
+				{
+					"name": "Get Movement By ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/movements/1",
+							"host": ["{{baseUrl}}"],
+							"path": ["movements", "1"]
+						}
+					}
+				},
+				{
+					"name": "Create Movement - Deposit",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"date\": \"2026-01-31T10:30:00\",\n  \"movementType\": \"Deposito\",\n  \"value\": 500.00,\n  \"accountId\": 1\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/movements",
+							"host": ["{{baseUrl}}"],
+							"path": ["movements"]
+						}
+					}
+				},
+				{
+					"name": "Create Movement - Withdrawal",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"date\": \"2026-01-31T14:00:00\",\n  \"movementType\": \"Retiro\",\n  \"value\": -200.00,\n  \"accountId\": 1\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/movements",
+							"host": ["{{baseUrl}}"],
+							"path": ["movements"]
+						}
+					}
+				},
+				{
+					"name": "Update Movement (PUT)",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"date\": \"2026-01-31T15:00:00\",\n  \"movementType\": \"Retiro Actualizado\",\n  \"value\": -150.00,\n  \"accountId\": 1\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/movements/1",
+							"host": ["{{baseUrl}}"],
+							"path": ["movements", "1"]
+						}
+					}
+				},
+				{
+					"name": "Partial Update Movement (PATCH)",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"movementType\": \"Retiro Parcial\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/movements/1",
+							"host": ["{{baseUrl}}"],
+							"path": ["movements", "1"]
+						}
+					}
+				},
+				{
+					"name": "Delete Movement",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/movements/1",
+							"host": ["{{baseUrl}}"],
+							"path": ["movements", "1"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Reports",
+			"item": [
+				{
+					"name": "Get Account Statement - JSON",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/reportes?clientId=1&startDate=2026-01-01T00:00:00&endDate=2026-01-31T23:59:59&format=json",
+							"host": ["{{baseUrl}}"],
+							"path": ["reportes"],
+							"query": [
+								{
+									"key": "clientId",
+									"value": "1"
+								},
+								{
+									"key": "startDate",
+									"value": "2026-01-01T00:00:00"
+								},
+								{
+									"key": "endDate",
+									"value": "2026-01-31T23:59:59"
+								},
+								{
+									"key": "format",
+									"value": "json"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Account Statement - PDF (Base64)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/reportes?clientId=1&startDate=2026-01-01T00:00:00&endDate=2026-01-31T23:59:59&format=pdf",
+							"host": ["{{baseUrl}}"],
+							"path": ["reportes"],
+							"query": [
+								{
+									"key": "clientId",
+									"value": "1"
+								},
+								{
+									"key": "startDate",
+									"value": "2026-01-01T00:00:00"
+								},
+								{
+									"key": "endDate",
+									"value": "2026-01-31T23:59:59"
+								},
+								{
+									"key": "format",
+									"value": "pdf"
+								}
+							]
+						}
+					}
+				}
+			]
+		}
+	],
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:8080",
+			"type": "string"
+		}
+	]
+}

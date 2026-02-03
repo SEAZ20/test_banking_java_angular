@@ -1,0 +1,25 @@
+# Ignorar directorio de compilación de Maven
+/target/
+
+# Archivos temporales y logs
+*.log
+*.tmp
+
+# Archivos de Java generados
+*.class
+*.jar
+*.war
+
+# IDEs
+/.idea/
+*.iml
+/.vscode/
+
+# Mac / Windows
+.DS_Store
+Thumbs.db
+
+# Otros generados
+/generated-sources/
+/out/
+

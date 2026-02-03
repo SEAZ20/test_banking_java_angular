@@ -1,0 +1,137 @@
+<div class="clients-container">
+  <div class="header">
+    <h1>Clientes</h1>
+  </div>
+
+  <div class="toolbar">
+    <div class="search-box">
+      <input 
+        type="text" 
+        placeholder="Buscar" 
+        [(ngModel)]="searchTerm"
+        (input)="filterClients()"
+        class="search-input"
+      />
+    </div>
+    <button class="btn-new" (click)="openCreateModal()">Nuevo</button>
+  </div>
+
+  <div class="table-container">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Nombre</th>
+          <th>Género</th>
+          <th>Edad</th>
+          <th>Identificación</th>
+          <th>Dirección</th>
+          <th>Teléfono</th>
+          <th>Cliente ID</th>
+          <th>Estado</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let client of filteredClients">
+          <td>{{ client.name }}</td>
+          <td>{{ client.gender || '-' }}</td>
+          <td>{{ client.age || '-' }}</td>
+          <td>{{ client.identification }}</td>
+          <td>{{ client.address || '-' }}</td>
+          <td>{{ client.phone || '-' }}</td>
+          <td>{{ client.clientId }}</td>
+          <td>
+            <span [class]="client.status ? 'status-active' : 'status-inactive'">
+              {{ client.status ? 'Activo' : 'Inactivo' }}
+            </span>
+          </td>
+          <td class="actions">
+            <button class="btn-action btn-edit" (click)="openEditModal(client)">Editar</button>
+            <button class="btn-action btn-delete" (click)="deleteClient(client)">Eliminar</button>
+          </td>
+        </tr>
+        <tr *ngIf="filteredClients.length === 0">
+          <td colspan="9" class="no-data">No hay clientes registrados</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Modal -->
+  <div class="modal-overlay" *ngIf="showModal" (click)="closeModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>{{ isEditMode ? 'Editar Cliente' : 'Nuevo Cliente' }}</h2>
+        <button class="btn-close" (click)="closeModal()">&times;</button>
+      </div>
+
+      <div class="modal-body">
+        <div class="error-message" *ngIf="errorMessage" [innerHTML]="errorMessage"></div>
+        
+        <form>
+          <div class="form-group">
+            <label>Nombre *</label>
+            <input type="text" [(ngModel)]="selectedClient.name" name="name" required />
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label>Género</label>
+              <select [(ngModel)]="selectedClient.gender" name="gender">
+                <option value="">Seleccionar</option>
+                <option value="Masculino">Masculino</option>
+                <option value="Femenino">Femenino</option>
+                <option value="Otro">Otro</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label>Edad</label>
+              <input type="number" [(ngModel)]="selectedClient.age" name="age" min="0" />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Identificación *</label>
+            <input type="text" [(ngModel)]="selectedClient.identification" name="identification" required />
+          </div>
+
+          <div class="form-group">
+            <label>Dirección</label>
+            <input type="text" [(ngModel)]="selectedClient.address" name="address" />
+          </div>
+
+          <div class="form-group">
+            <label>Teléfono</label>
+            <input type="text" [(ngModel)]="selectedClient.phone" name="phone" />
+          </div>
+
+          <div class="form-group">
+            <label>Cliente ID *</label>
+            <input type="text" [(ngModel)]="selectedClient.clientId" name="clientId" required 
+                   [disabled]="isEditMode" />
+          </div>
+
+          <div class="form-group">
+            <label>Contraseña *</label>
+            <input type="password" [(ngModel)]="selectedClient.password" name="password" 
+                   [required]="!isEditMode" 
+                   [placeholder]="isEditMode ? 'Dejar vacío para mantener actual' : ''" />
+          </div>
+
+          <div class="form-group">
+            <label class="checkbox-label">
+              <input type="checkbox" [(ngModel)]="selectedClient.status" name="status" />
+              Activo
+            </label>
+          </div>
+        </form>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn-cancel" (click)="closeModal()">Cancelar</button>
+        <button class="btn-save" (click)="saveClient()">Guardar</button>
+      </div>
+    </div>
+  </div>
+</div>

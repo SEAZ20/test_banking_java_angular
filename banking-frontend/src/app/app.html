@@ -1,0 +1,30 @@
+<div class="app-container">
+  <header class="app-header">
+    <h1>{{ title() }}</h1>
+  </header>
+
+  <div class="app-body">
+    <aside class="sidebar">
+      <nav>
+        <ul>
+          <li>
+            <a routerLink="/clients" routerLinkActive="active">Clientes</a>
+          </li>
+          <li>
+            <a routerLink="/accounts" routerLinkActive="active">Cuentas</a>
+          </li>
+          <li>
+            <a routerLink="/movements" routerLinkActive="active">Movimientos</a>
+          </li>
+          <li>
+            <a routerLink="/reports" routerLinkActive="active">Reportes</a>
+          </li>
+        </ul>
+      </nav>
+    </aside>
+
+    <main class="main-content">
+      <router-outlet />
+    </main>
+  </div>
+</div>
