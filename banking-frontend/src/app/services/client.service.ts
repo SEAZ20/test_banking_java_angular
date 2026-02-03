@@ -2,32 +2,38 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { ClientRequest, ClientResponse } from '../models/client.model';
+import { BaseHttpService } from './base-http.service';
 
+/**
+ * Servicio para gestión de clientes
+ * Hereda de BaseHttpService para reutilizar operaciones CRUD comunes
+ */
 @Injectable({
   providedIn: 'root'
 })
-export class ClientService {
-  private apiUrl = 'http://localhost:8080/clients';
+export class ClientService extends BaseHttpService<ClientRequest, ClientResponse> {
+  constructor(http: HttpClient) {
+    super(http, 'clients');
+  }
 
-  constructor(private http: HttpClient) {}
-
+  // Métodos de conveniencia que delegan a la clase base
   getAllClients(): Observable<ClientResponse[]> {
-    return this.http.get<ClientResponse[]>(this.apiUrl);
+    return this.getAll();
   }
 
   getClientById(id: number): Observable<ClientResponse> {
-    return this.http.get<ClientResponse>(`${this.apiUrl}/${id}`);
+    return this.getById(id);
   }
 
   createClient(client: ClientRequest): Observable<ClientResponse> {
-    return this.http.post<ClientResponse>(this.apiUrl, client);
+    return this.create(client);
   }
 
   updateClient(id: number, client: ClientRequest): Observable<ClientResponse> {
-    return this.http.put<ClientResponse>(`${this.apiUrl}/${id}`, client);
+    return this.update(id, client);
   }
 
   deleteClient(id: number): Observable<void> {
-    return this.http.delete<void>(`${this.apiUrl}/${id}`);
+    return this.delete(id);
   }
 }

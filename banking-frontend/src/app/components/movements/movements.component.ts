@@ -1,11 +1,17 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Subject, takeUntil } from 'rxjs';
 import { MovementService } from '../../services/movement.service';
 import { AccountService } from '../../services/account.service';
+import { NotificationService } from '../../services/notification.service';
 import { MovementRequest, MovementResponse } from '../../models/movement.model';
 import { AccountResponse } from '../../models/account.model';
 
+/**
+ * Componente para gestión de movimientos
+ * Implementa OnDestroy para prevenir memory leaks
+ */
 @Component({
   selector: 'app-movements',
   standalone: true,
@@ -13,7 +19,7 @@ import { AccountResponse } from '../../models/account.model';
   templateUrl: './movements.component.html',
   styleUrls: ['./movements.component.css']
 })
-export class MovementsComponent implements OnInit {
+export class MovementsComponent implements OnInit, OnDestroy {
   movements: MovementResponse[] = [];
   filteredMovements: MovementResponse[] = [];
   accounts: AccountResponse[] = [];
@@ -24,9 +30,12 @@ export class MovementsComponent implements OnInit {
   selectedMovementId?: number;
   errorMessage: string = '';
 
+  private destroy$ = new Subject<void>();
+
   constructor(
     private movementService: MovementService,
-    private accountService: AccountService
+    private accountService: AccountService,
+    private notificationService: NotificationService
   ) {}
 
   ngOnInit(): void {
@@ -34,30 +43,41 @@ export class MovementsComponent implements OnInit {
     this.loadAccounts();
   }
 
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
   loadMovements(): void {
-    this.movementService.getAllMovements().subscribe({
-      next: (data) => {
-        this.movements = data;
-        this.filteredMovements = data;
-        this.enrichMovementsWithAccountNumbers();
-      },
-      error: (error) => {
-        console.error('Error loading movements:', error);
-        this.errorMessage = 'Error al cargar los movimientos';
-      }
-    });
+    this.movementService.getAllMovements()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (data) => {
+          this.movements = data;
+          this.filteredMovements = data;
+          this.enrichMovementsWithAccountNumbers();
+        },
+        error: (error) => {
+          const errorMsg = this.notificationService.extractErrorMessage(error);
+          this.notificationService.error(errorMsg);
+          this.errorMessage = 'Error al cargar los movimientos';
+        }
+      });
   }
 
   loadAccounts(): void {
-    this.accountService.getAllAccounts().subscribe({
-      next: (data) => {
-        this.accounts = data;
-        this.enrichMovementsWithAccountNumbers();
-      },
-      error: (error) => {
-        console.error('Error loading accounts:', error);
-      }
-    });
+    this.accountService.getAllAccounts()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (data) => {
+          this.accounts = data;
+          this.enrichMovementsWithAccountNumbers();
+        },
+        error: (error) => {
+          const errorMsg = this.notificationService.extractErrorMessage(error);
+          this.notificationService.error(errorMsg);
+        }
+      });
   }
 
   enrichMovementsWithAccountNumbers(): void {
@@ -108,53 +128,53 @@ export class MovementsComponent implements OnInit {
     this.errorMessage = '';
   }
 
-  private extractErrorMessage(error: any): string {
-    if (error.error?.errors) {
-      const errors = error.error.errors;
-      const errorMessages = Object.keys(errors).map(key => `${errors[key]}`).join('<br>');
-      return errorMessages;
-    }
-    return error.error?.message || error.error?.error || 'Error al procesar la solicitud';
-  }
-
   saveMovement(): void {
     if (this.isEditMode && this.selectedMovementId) {
-      this.movementService.updateMovement(this.selectedMovementId, this.selectedMovement).subscribe({
-        next: () => {
-          this.loadMovements();
-          this.closeModal();
-        },
-        error: (error) => {
-          console.error('Error updating movement:', error);
-          this.errorMessage = this.extractErrorMessage(error);
-        }
-      });
+      this.movementService.updateMovement(this.selectedMovementId, this.selectedMovement)
+        .pipe(takeUntil(this.destroy$))
+        .subscribe({
+          next: () => {
+            this.notificationService.success('Movimiento actualizado exitosamente');
+            this.loadMovements();
+            this.closeModal();
+          },
+          error: (error) => {
+            this.errorMessage = this.notificationService.extractErrorMessage(error);
+            this.notificationService.error(this.errorMessage);
+          }
+        });
     } else {
-      this.movementService.createMovement(this.selectedMovement).subscribe({
-        next: () => {
-          this.loadMovements();
-          this.closeModal();
-        },
-        error: (error) => {
-          console.error('Error creating movement:', error);
-          this.errorMessage = this.extractErrorMessage(error);
-        }
-      });
+      this.movementService.createMovement(this.selectedMovement)
+        .pipe(takeUntil(this.destroy$))
+        .subscribe({
+          next: () => {
+            this.notificationService.success('Movimiento creado exitosamente');
+            this.loadMovements();
+            this.closeModal();
+          },
+          error: (error) => {
+            this.errorMessage = this.notificationService.extractErrorMessage(error);
+            this.notificationService.error(this.errorMessage);
+          }
+        });
     }
   }
 
   deleteMovement(movement: MovementResponse): void {
-    if (confirm(`¿Está seguro de eliminar este movimiento?`)) {
-      this.movementService.deleteMovement(movement.id).subscribe({
-        next: () => {
-          this.loadMovements();
-        },
-        error: (error) => {
-          console.error('Error deleting movement:', error);
-          const errorMsg = this.extractErrorMessage(error);
-          alert(errorMsg);
-        }
-      });
+    if (this.notificationService.confirm(`¿Está seguro de eliminar este movimiento?`)) {
+      this.movementService.deleteMovement(movement.id)
+        .pipe(takeUntil(this.destroy$))
+        .subscribe({
+          next: () => {
+            this.notificationService.success('Movimiento eliminado exitosamente');
+            this.loadMovements();
+          },
+          error: (error) => {
+            const errorMsg = this.notificationService.extractErrorMessage(error);
+            this.notificationService.error(errorMsg);
+            this.notificationService.alert(errorMsg);
+          }
+        });
     }
   }
 

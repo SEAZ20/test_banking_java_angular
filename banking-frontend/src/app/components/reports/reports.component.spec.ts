@@ -2,6 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ReportsComponent } from './reports.component';
 import { ReportService } from '../../services/report.service';
 import { ClientService } from '../../services/client.service';
+import { NotificationService } from '../../services/notification.service';
 import { of, throwError } from 'rxjs';
 import { AccountStatementReport } from '../../models/report.model';
 import { ClientResponse } from '../../models/client.model';
@@ -11,6 +12,7 @@ describe('ReportsComponent', () => {
   let fixture: ComponentFixture<ReportsComponent>;
   let mockReportService: jest.Mocked<ReportService>;
   let mockClientService: jest.Mocked<ClientService>;
+  let mockNotificationService: jest.Mocked<NotificationService>;
 
   const mockReport: AccountStatementReport[] = [
     {
@@ -48,11 +50,22 @@ describe('ReportsComponent', () => {
       deleteClient: jest.fn()
     } as any;
 
+    mockNotificationService = {
+      success: jest.fn(),
+      error: jest.fn(),
+      warning: jest.fn(),
+      info: jest.fn(),
+      confirm: jest.fn(),
+      alert: jest.fn(),
+      extractErrorMessage: jest.fn().mockReturnValue('Error message')
+    } as any;
+
     await TestBed.configureTestingModule({
       imports: [ReportsComponent],
       providers: [
         { provide: ReportService, useValue: mockReportService },
-        { provide: ClientService, useValue: mockClientService }
+        { provide: ClientService, useValue: mockClientService },
+        { provide: NotificationService, useValue: mockNotificationService }
       ]
     }).compileComponents();
 
@@ -78,19 +91,19 @@ describe('ReportsComponent', () => {
     });
 
     it('should handle error when generating report', () => {
-      const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation();
       const errorResponse = { 
         error: { 
           message: 'Client not found' 
         } 
       };
+      mockNotificationService.extractErrorMessage.mockReturnValue('Client not found');
       mockReportService.generateAccountStatement.mockReturnValue(throwError(() => errorResponse));
       component.reportParams.clientId = 1;
 
       component.generateReport();
 
       expect(component.errorMessage).toContain('Client not found');
-      consoleErrorSpy.mockRestore();
+      expect(mockNotificationService.extractErrorMessage).toHaveBeenCalledWith(errorResponse);
     });
 
     it('should not generate report without client selected', () => {

@@ -2,11 +2,12 @@ import { TestBed } from '@angular/core/testing';
 import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
 import { ClientService } from './client.service';
 import { ClientRequest, ClientResponse } from '../models/client.model';
+import { environment } from '../../environments/environment';
 
 describe('ClientService', () => {
   let service: ClientService;
   let httpMock: HttpTestingController;
-  const apiUrl = 'http://localhost:8080/clients';
+  const apiUrl = `${environment.apiUrl}/clients`;
 
   beforeEach(() => {
     TestBed.configureTestingModule({

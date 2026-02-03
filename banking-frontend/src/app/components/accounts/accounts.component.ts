@@ -1,11 +1,17 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Subject, takeUntil } from 'rxjs';
 import { AccountService } from '../../services/account.service';
 import { ClientService } from '../../services/client.service';
+import { NotificationService } from '../../services/notification.service';
 import { AccountRequest, AccountResponse } from '../../models/account.model';
 import { ClientResponse } from '../../models/client.model';
 
+/**
+ * Componente para gestión de cuentas
+ * Implementa OnDestroy para prevenir memory leaks
+ */
 @Component({
   selector: 'app-accounts',
   standalone: true,
@@ -13,7 +19,7 @@ import { ClientResponse } from '../../models/client.model';
   templateUrl: './accounts.component.html',
   styleUrls: ['./accounts.component.css']
 })
-export class AccountsComponent implements OnInit {
+export class AccountsComponent implements OnInit, OnDestroy {
   accounts: AccountResponse[] = [];
   filteredAccounts: AccountResponse[] = [];
   clients: ClientResponse[] = [];
@@ -24,9 +30,12 @@ export class AccountsComponent implements OnInit {
   selectedAccountId?: number;
   errorMessage: string = '';
 
+  private destroy$ = new Subject<void>();
+
   constructor(
     private accountService: AccountService,
-    private clientService: ClientService
+    private clientService: ClientService,
+    private notificationService: NotificationService
   ) {}
 
   ngOnInit(): void {
@@ -34,30 +43,41 @@ export class AccountsComponent implements OnInit {
     this.loadClients();
   }
 
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
   loadAccounts(): void {
-    this.accountService.getAllAccounts().subscribe({
-      next: (data) => {
-        this.accounts = data;
-        this.filteredAccounts = data;
-        this.enrichAccountsWithClientNames();
-      },
-      error: (error) => {
-        console.error('Error loading accounts:', error);
-        this.errorMessage = 'Error al cargar las cuentas';
-      }
-    });
+    this.accountService.getAllAccounts()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (data) => {
+          this.accounts = data;
+          this.filteredAccounts = data;
+          this.enrichAccountsWithClientNames();
+        },
+        error: (error) => {
+          const errorMsg = this.notificationService.extractErrorMessage(error);
+          this.notificationService.error(errorMsg);
+          this.errorMessage = 'Error al cargar las cuentas';
+        }
+      });
   }
 
   loadClients(): void {
-    this.clientService.getAllClients().subscribe({
-      next: (data) => {
-        this.clients = data;
-        this.enrichAccountsWithClientNames();
-      },
-      error: (error) => {
-        console.error('Error loading clients:', error);
-      }
-    });
+    this.clientService.getAllClients()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (data) => {
+          this.clients = data;
+          this.enrichAccountsWithClientNames();
+        },
+        error: (error) => {
+          const errorMsg = this.notificationService.extractErrorMessage(error);
+          this.notificationService.error(errorMsg);
+        }
+      });
   }
 
   enrichAccountsWithClientNames(): void {
@@ -110,53 +130,53 @@ export class AccountsComponent implements OnInit {
     this.errorMessage = '';
   }
 
-  private extractErrorMessage(error: any): string {
-    if (error.error?.errors) {
-      const errors = error.error.errors;
-      const errorMessages = Object.keys(errors).map(key => `${errors[key]}`).join('<br>');
-      return errorMessages;
-    }
-    return error.error?.message || error.error?.error || 'Error al procesar la solicitud';
-  }
-
   saveAccount(): void {
     if (this.isEditMode && this.selectedAccountId) {
-      this.accountService.updateAccount(this.selectedAccountId, this.selectedAccount).subscribe({
-        next: () => {
-          this.loadAccounts();
-          this.closeModal();
-        },
-        error: (error) => {
-          console.error('Error updating account:', error);
-          this.errorMessage = this.extractErrorMessage(error);
-        }
-      });
+      this.accountService.updateAccount(this.selectedAccountId, this.selectedAccount)
+        .pipe(takeUntil(this.destroy$))
+        .subscribe({
+          next: () => {
+            this.notificationService.success('Cuenta actualizada exitosamente');
+            this.loadAccounts();
+            this.closeModal();
+          },
+          error: (error) => {
+            this.errorMessage = this.notificationService.extractErrorMessage(error);
+            this.notificationService.error(this.errorMessage);
+          }
+        });
     } else {
-      this.accountService.createAccount(this.selectedAccount).subscribe({
-        next: () => {
-          this.loadAccounts();
-          this.closeModal();
-        },
-        error: (error) => {
-          console.error('Error creating account:', error);
-          this.errorMessage = this.extractErrorMessage(error);
-        }
-      });
+      this.accountService.createAccount(this.selectedAccount)
+        .pipe(takeUntil(this.destroy$))
+        .subscribe({
+          next: () => {
+            this.notificationService.success('Cuenta creada exitosamente');
+            this.loadAccounts();
+            this.closeModal();
+          },
+          error: (error) => {
+            this.errorMessage = this.notificationService.extractErrorMessage(error);
+            this.notificationService.error(this.errorMessage);
+          }
+        });
     }
   }
 
   deleteAccount(account: AccountResponse): void {
-    if (confirm(`¿Está seguro de eliminar la cuenta ${account.accountNumber}?`)) {
-      this.accountService.deleteAccount(account.id).subscribe({
-        next: () => {
-          this.loadAccounts();
-        },
-        error: (error) => {
-          console.error('Error deleting account:', error);
-          const errorMsg = this.extractErrorMessage(error);
-          alert(errorMsg);
-        }
-      });
+    if (this.notificationService.confirm(`¿Está seguro de eliminar la cuenta ${account.accountNumber}?`)) {
+      this.accountService.deleteAccount(account.id)
+        .pipe(takeUntil(this.destroy$))
+        .subscribe({
+          next: () => {
+            this.notificationService.success('Cuenta eliminada exitosamente');
+            this.loadAccounts();
+          },
+          error: (error) => {
+            const errorMsg = this.notificationService.extractErrorMessage(error);
+            this.notificationService.error(errorMsg);
+            this.notificationService.alert(errorMsg);
+          }
+        });
     }
   }
 

@@ -37,20 +37,17 @@ public class MovementServiceImpl implements MovementService {
     @Transactional(readOnly = true)
     public MovementResponseDTO getMovementById(Long id) {
         Movement movement = movementRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Movement not found with id: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Movimiento no encontrado con id: " + id));
         return mapToResponseDTO(movement);
     }
 
     @Transactional
     public MovementResponseDTO createMovement(MovementRequestDTO requestDTO) {
-        // Validar que la cuenta exista
         Account account = accountRepository.findById(requestDTO.getAccountId())
-                .orElseThrow(() -> new ResourceNotFoundException("Account not found with id: " + requestDTO.getAccountId()));
+                .orElseThrow(() -> new ResourceNotFoundException("Cuenta no encontrada con id: " + requestDTO.getAccountId()));
 
-        // Obtener el saldo actual de la cuenta
         Double currentBalance = getCurrentBalance(account);
 
-        // Validar valor del movimiento y ajustar según el tipo
         Double movementValue = requestDTO.getValue();
         
 
@@ -59,16 +56,13 @@ public class MovementServiceImpl implements MovementService {
         } else if ("DEPOSITO".equalsIgnoreCase(requestDTO.getMovementType())) {
             movementValue = Math.abs(movementValue);
         }
-        
-        // Calcular nuevo saldo
+
         double newBalance = currentBalance + movementValue;
-        
-        // Validar que el saldo no sea negativo
+
         if (newBalance < 0) {
             throw new InsufficientBalanceException("Saldo no disponible");
         }
-        
-        // Validar límite diario solo para retiros (valores negativos)
+
         if (movementValue < 0) {
             validateDailyWithdrawalLimit(account, Math.abs(movementValue));
         }
@@ -87,15 +81,13 @@ public class MovementServiceImpl implements MovementService {
     @Transactional
     public MovementResponseDTO updateMovement(Long id, MovementRequestDTO requestDTO) {
         Movement movement = movementRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Movement not found with id: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Movimiento no encontrado con id: " + id));
 
         Account account = accountRepository.findById(requestDTO.getAccountId())
-                .orElseThrow(() -> new ResourceNotFoundException("Account not found with id: " + requestDTO.getAccountId()));
+                .orElseThrow(() -> new ResourceNotFoundException("Cuenta no encontrada con id: " + requestDTO.getAccountId()));
 
-        // Obtener saldo antes de este movimiento
         Double balanceBeforeThisMovement = getBalanceBeforeMovement(movement);
-        
-        // Validar valor del movimiento y ajustar según el tipo
+
         Double movementValue = requestDTO.getValue();
 
         if ("RETIRO".equalsIgnoreCase(requestDTO.getMovementType())) {
@@ -103,11 +95,9 @@ public class MovementServiceImpl implements MovementService {
         } else if ("DEPOSITO".equalsIgnoreCase(requestDTO.getMovementType())) {
             movementValue = Math.abs(movementValue);
         }
-        
-        // Calcular nuevo saldo
-        Double newBalance = balanceBeforeThisMovement + movementValue;
-        
-        // Validar que el saldo no sea negativo
+
+        double newBalance = balanceBeforeThisMovement + movementValue;
+
         if (newBalance < 0) {
             throw new InsufficientBalanceException("Saldo no disponible");
         }
@@ -125,13 +115,12 @@ public class MovementServiceImpl implements MovementService {
     @Transactional
     public MovementResponseDTO partialUpdateMovement(Long id, MovementRequestDTO requestDTO) {
         Movement movement = movementRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Movement not found with id: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Movimiento no encontrado con id: " + id));
 
         if (requestDTO.getDate() != null) {
             movement.setDate(requestDTO.getDate());
         }
-        
-        // Si se actualiza el tipo o el valor, toca recalcular el balance
+
         boolean needsRecalculation = requestDTO.getMovementType() != null || requestDTO.getValue() != null;
         
         if (requestDTO.getMovementType() != null) {
@@ -139,24 +128,18 @@ public class MovementServiceImpl implements MovementService {
         }
         
         if (requestDTO.getValue() != null || needsRecalculation) {
-            // Obtener el saldo antes de este movimiento
             Double balanceBeforeThisMovement = getBalanceBeforeMovement(movement);
-            
-            // Obtener el valor a usar
+
             Double movementValue = requestDTO.getValue() != null ? requestDTO.getValue() : movement.getValue();
-            
-            // Si es un retiro, asegurar que el valor sea negativo
+
             if ("RETIRO".equalsIgnoreCase(movement.getMovementType())) {
                 movementValue = Math.abs(movementValue) * -1;
             } else if ("DEPOSITO".equalsIgnoreCase(movement.getMovementType())) {
-                // Si es un depósito, asegurar que el valor sea positivo
                 movementValue = Math.abs(movementValue);
             }
-            
-            // Calcular nuevo saldo
-            Double newBalance = balanceBeforeThisMovement + movementValue;
-            
-            // Validar que el saldo no sea negativo
+
+            double newBalance = balanceBeforeThisMovement + movementValue;
+
             if (newBalance < 0) {
                 throw new InsufficientBalanceException("Saldo no disponible");
             }
@@ -167,7 +150,7 @@ public class MovementServiceImpl implements MovementService {
         
         if (requestDTO.getAccountId() != null) {
             Account account = accountRepository.findById(requestDTO.getAccountId())
-                    .orElseThrow(() -> new ResourceNotFoundException("Account not found with id: " + requestDTO.getAccountId()));
+                    .orElseThrow(() -> new ResourceNotFoundException("Cuenta no encontrada con id: " + requestDTO.getAccountId()));
             movement.setAccount(account);
         }
 
@@ -178,7 +161,7 @@ public class MovementServiceImpl implements MovementService {
     @Transactional
     public void deleteMovement(Long id) {
         Movement movement = movementRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Movement not found with id: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Movimiento no encontrado con id: " + id));
         
         movementRepository.delete(movement);
     }
@@ -193,10 +176,8 @@ public class MovementServiceImpl implements MovementService {
     }
 
     private Double getBalanceBeforeMovement(Movement currentMovement) {
-        // Obtener todos los movimientos de la cuenta ordenados por fecha
         List<Movement> movements = movementRepository.findByAccountId(currentMovement.getAccount().getId());
 
-        // Encontrar el movimiento anterior a este
         Movement previousMovement = null;
         for (Movement mov : movements) {
             if (mov.getId().equals(currentMovement.getId())) {
@@ -205,7 +186,6 @@ public class MovementServiceImpl implements MovementService {
             previousMovement = mov;
         }
 
-        // Si hay un movimiento anterior, retornar su balance, sino el saldo inicial
         return previousMovement != null ? 
                 previousMovement.getBalance() : 
                 currentMovement.getAccount().getInitialBalance();
@@ -214,8 +194,7 @@ public class MovementServiceImpl implements MovementService {
     private void validateDailyWithdrawalLimit(Account account, Double withdrawalAmount) {
         LocalDateTime startOfDay = LocalDateTime.of(LocalDate.now(), LocalTime.MIN);
         LocalDateTime endOfDay = LocalDateTime.of(LocalDate.now(), LocalTime.MAX);
-        
-        // Obtener todos los retiros del día
+
         Double totalWithdrawalsToday = movementRepository
                 .findByAccountIdAndDateBetween(account.getId(), startOfDay, endOfDay)
                 .stream()

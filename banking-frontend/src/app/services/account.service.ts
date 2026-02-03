@@ -2,32 +2,37 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { AccountRequest, AccountResponse } from '../models/account.model';
+import { BaseHttpService } from './base-http.service';
 
+/**
+ * Servicio para gestión de cuentas
+ * Hereda de BaseHttpService para reutilizar operaciones CRUD comunes
+ */
 @Injectable({
   providedIn: 'root'
 })
-export class AccountService {
-  private apiUrl = 'http://localhost:8080/accounts';
-
-  constructor(private http: HttpClient) {}
+export class AccountService extends BaseHttpService<AccountRequest, AccountResponse> {
+  constructor(http: HttpClient) {
+    super(http, 'accounts');
+  }
 
   getAllAccounts(): Observable<AccountResponse[]> {
-    return this.http.get<AccountResponse[]>(this.apiUrl);
+    return this.getAll();
   }
 
   getAccountById(id: number): Observable<AccountResponse> {
-    return this.http.get<AccountResponse>(`${this.apiUrl}/${id}`);
+    return this.getById(id);
   }
 
   createAccount(account: AccountRequest): Observable<AccountResponse> {
-    return this.http.post<AccountResponse>(this.apiUrl, account);
+    return this.create(account);
   }
 
   updateAccount(id: number, account: AccountRequest): Observable<AccountResponse> {
-    return this.http.put<AccountResponse>(`${this.apiUrl}/${id}`, account);
+    return this.update(id, account);
   }
 
   deleteAccount(id: number): Observable<void> {
-    return this.http.delete<void>(`${this.apiUrl}/${id}`);
+    return this.delete(id);
   }
 }

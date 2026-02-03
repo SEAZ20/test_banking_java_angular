@@ -35,12 +35,12 @@ public class ReportServiceImpl implements ReportService {
                                           LocalDateTime endDate, String format) {
 
         Client client = clientRepository.findById(clientId)
-                .orElseThrow(() -> new ResourceNotFoundException("Client not found with id: " + clientId));
+                .orElseThrow(() -> new ResourceNotFoundException("Cliente no encontrado con id: " + clientId));
 
         List<Account> accounts = accountRepository.findByClientId(clientId);
 
         if (accounts.isEmpty()) {
-            throw new ResourceNotFoundException("No accounts found for client id: " + client.getName());
+            throw new ResourceNotFoundException("No se encontraron cuentas para el cliente: " + client.getName());
         }
 
         List<AccountReportDTO> accountReports = accounts.stream()
@@ -107,7 +107,7 @@ public class ReportServiceImpl implements ReportService {
         ReportFormatter formatter = formatters.get(formatterKey);
         
         if (formatter == null) {
-            throw new IllegalArgumentException("Unsupported report format: " + format);
+            throw new IllegalArgumentException("Formato de reporte no soportado: " + format);
         }
         
         return formatter;

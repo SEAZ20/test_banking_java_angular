@@ -39,12 +39,8 @@ public class JsonReportFormatter implements ReportFormatter {
             
             return mapper.writerWithDefaultPrettyPrinter().writeValueAsString(statements);
         } catch (Exception e) {
-            throw new RuntimeException("Error formatting JSON report", e);
+            throw new RuntimeException("Error al formatear el reporte JSON", e);
         }
     }
-
-    @Override
-    public String getContentType() {
-        return "application/json";
-    }
+    
 }

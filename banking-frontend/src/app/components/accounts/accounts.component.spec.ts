@@ -2,6 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { AccountsComponent } from './accounts.component';
 import { AccountService } from '../../services/account.service';
 import { ClientService } from '../../services/client.service';
+import { NotificationService } from '../../services/notification.service';
 import { of, throwError } from 'rxjs';
 import { AccountResponse } from '../../models/account.model';
 import { ClientResponse } from '../../models/client.model';
@@ -11,6 +12,7 @@ describe('AccountsComponent', () => {
   let fixture: ComponentFixture<AccountsComponent>;
   let mockAccountService: jest.Mocked<AccountService>;
   let mockClientService: jest.Mocked<ClientService>;
+  let mockNotificationService: jest.Mocked<NotificationService>;
 
   const mockAccounts: AccountResponse[] = [
     {
@@ -50,11 +52,22 @@ describe('AccountsComponent', () => {
       deleteClient: jest.fn()
     } as any;
 
+    mockNotificationService = {
+      success: jest.fn(),
+      error: jest.fn(),
+      warning: jest.fn(),
+      info: jest.fn(),
+      confirm: jest.fn(),
+      alert: jest.fn(),
+      extractErrorMessage: jest.fn().mockReturnValue('Error message')
+    } as any;
+
     await TestBed.configureTestingModule({
       imports: [AccountsComponent],
       providers: [
         { provide: AccountService, useValue: mockAccountService },
-        { provide: ClientService, useValue: mockClientService }
+        { provide: ClientService, useValue: mockClientService },
+        { provide: NotificationService, useValue: mockNotificationService }
       ]
     }).compileComponents();
 
@@ -166,27 +179,27 @@ describe('AccountsComponent', () => {
     });
 
     it('should handle error when creating account', () => {
-      const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation();
       const errorResponse = { 
         error: { 
           errors: { accountNumber: 'Account number is required' } 
         } 
       };
+      mockNotificationService.extractErrorMessage.mockReturnValue('Account number is required');
       mockAccountService.createAccount.mockReturnValue(throwError(() => errorResponse));
       component.isEditMode = false;
 
       component.saveAccount();
 
       expect(component.errorMessage).toContain('Account number is required');
-      consoleErrorSpy.mockRestore();
+      expect(mockNotificationService.extractErrorMessage).toHaveBeenCalledWith(errorResponse);
     });
   });
 
   describe('deleteAccount', () => {
     it('should delete account successfully', () => {
+      mockNotificationService.confirm.mockReturnValue(true);
       mockAccountService.deleteAccount.mockReturnValue(of(void 0));
       mockAccountService.getAllAccounts.mockReturnValue(of([mockAccounts[1]]));
-      window.confirm = jest.fn(() => true);
 
       component.deleteAccount(mockAccounts[0]);
 
@@ -194,7 +207,7 @@ describe('AccountsComponent', () => {
     });
 
     it('should not delete account when user cancels', () => {
-      window.confirm = jest.fn(() => false);
+      mockNotificationService.confirm.mockReturnValue(false);
 
       component.deleteAccount(mockAccounts[0]);
 

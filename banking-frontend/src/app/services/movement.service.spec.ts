@@ -2,11 +2,12 @@ import { TestBed } from '@angular/core/testing';
 import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
 import { MovementService } from './movement.service';
 import { MovementRequest, MovementResponse } from '../models/movement.model';
+import { environment } from '../../environments/environment';
 
 describe('MovementService', () => {
   let service: MovementService;
   let httpMock: HttpTestingController;
-  const apiUrl = 'http://localhost:8080/movements';
+  const apiUrl = `${environment.apiUrl}/movements`;
 
   beforeEach(() => {
     TestBed.configureTestingModule({

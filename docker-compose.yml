@@ -1,0 +1,64 @@
+services:
+  # Base de datos MySQL
+  mysql:
+    image: mysql:8.0
+    container_name: banking-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: root123
+      MYSQL_DATABASE: devsu_db
+      MYSQL_USER: devsu_user
+      MYSQL_PASSWORD: devsu_pass
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - banking-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-proot123"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Backend Spring Boot
+  backend:
+    build:
+      context: ./banking-backend
+      dockerfile: Dockerfile
+    container_name: banking-backend
+    environment:
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_NAME: devsu_db
+      DB_USER: devsu_user
+      DB_PASSWORD: devsu_pass
+    ports:
+      - "8080:8080"
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - banking-network
+    restart: unless-stopped
+
+  # Frontend Angular
+  frontend:
+    build:
+      context: ./banking-frontend
+      dockerfile: Dockerfile
+    container_name: banking-frontend
+    ports:
+      - "4200:80"
+    depends_on:
+      - backend
+    networks:
+      - banking-network
+    restart: unless-stopped
+
+volumes:
+  mysql_data:
+    driver: local
+
+networks:
+  banking-network:
+    driver: bridge

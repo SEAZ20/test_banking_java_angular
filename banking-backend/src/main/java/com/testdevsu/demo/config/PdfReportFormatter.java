@@ -78,12 +78,8 @@ public class PdfReportFormatter implements ReportFormatter {
             return Base64.getEncoder().encodeToString(pdfBytes);
             
         } catch (Exception e) {
-            throw new RuntimeException("Error formatting PDF report", e);
+            throw new RuntimeException("Error al formatear el reporte PDF", e);
         }
     }
 
-    @Override
-    public String getContentType() {
-        return "application/pdf";
-    }
 }

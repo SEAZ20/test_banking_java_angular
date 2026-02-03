@@ -2,6 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { MovementsComponent } from './movements.component';
 import { MovementService } from '../../services/movement.service';
 import { AccountService } from '../../services/account.service';
+import { NotificationService } from '../../services/notification.service';
 import { of, throwError } from 'rxjs';
 import { MovementResponse } from '../../models/movement.model';
 import { AccountResponse } from '../../models/account.model';
@@ -11,6 +12,7 @@ describe('MovementsComponent', () => {
   let fixture: ComponentFixture<MovementsComponent>;
   let mockMovementService: jest.Mocked<MovementService>;
   let mockAccountService: jest.Mocked<AccountService>;
+  let mockNotificationService: jest.Mocked<NotificationService>;
 
   const mockMovements: MovementResponse[] = [
     {
@@ -48,11 +50,22 @@ describe('MovementsComponent', () => {
       deleteAccount: jest.fn()
     } as any;
 
+    mockNotificationService = {
+      success: jest.fn(),
+      error: jest.fn(),
+      warning: jest.fn(),
+      info: jest.fn(),
+      confirm: jest.fn(),
+      alert: jest.fn(),
+      extractErrorMessage: jest.fn().mockReturnValue('Error message')
+    } as any;
+
     await TestBed.configureTestingModule({
       imports: [MovementsComponent],
       providers: [
         { provide: MovementService, useValue: mockMovementService },
-        { provide: AccountService, useValue: mockAccountService }
+        { provide: AccountService, useValue: mockAccountService },
+        { provide: NotificationService, useValue: mockNotificationService }
       ]
     }).compileComponents();
 
@@ -156,43 +169,43 @@ describe('MovementsComponent', () => {
     });
 
     it('should handle error when creating movement', () => {
-      const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation();
       const errorResponse = { 
         error: { 
           errors: { value: 'Value is required' } 
         } 
       };
+      mockNotificationService.extractErrorMessage.mockReturnValue('Value is required');
       mockMovementService.createMovement.mockReturnValue(throwError(() => errorResponse));
       component.isEditMode = false;
 
       component.saveMovement();
 
       expect(component.errorMessage).toContain('Value is required');
-      consoleErrorSpy.mockRestore();
+      expect(mockNotificationService.extractErrorMessage).toHaveBeenCalledWith(errorResponse);
     });
 
     it('should handle insufficient balance error', () => {
-      const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation();
       const errorResponse = { 
         error: { 
           message: 'Saldo no disponible' 
         } 
       };
+      mockNotificationService.extractErrorMessage.mockReturnValue('Saldo no disponible');
       mockMovementService.createMovement.mockReturnValue(throwError(() => errorResponse));
       component.isEditMode = false;
 
       component.saveMovement();
 
       expect(component.errorMessage).toContain('Saldo no disponible');
-      consoleErrorSpy.mockRestore();
+      expect(mockNotificationService.extractErrorMessage).toHaveBeenCalledWith(errorResponse);
     });
   });
 
   describe('deleteMovement', () => {
     it('should delete movement successfully', () => {
+      mockNotificationService.confirm.mockReturnValue(true);
       mockMovementService.deleteMovement.mockReturnValue(of(void 0));
       mockMovementService.getAllMovements.mockReturnValue(of([mockMovements[1]]));
-      window.confirm = jest.fn(() => true);
 
       component.deleteMovement(mockMovements[0]);
 
@@ -200,7 +213,7 @@ describe('MovementsComponent', () => {
     });
 
     it('should not delete movement when user cancels', () => {
-      window.confirm = jest.fn(() => false);
+      mockNotificationService.confirm.mockReturnValue(false);
 
       component.deleteMovement(mockMovements[0]);
 

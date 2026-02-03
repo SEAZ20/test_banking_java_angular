@@ -1,11 +1,17 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Subject, takeUntil } from 'rxjs';
 import { ReportService } from '../../services/report.service';
 import { ClientService } from '../../services/client.service';
+import { NotificationService } from '../../services/notification.service';
 import { AccountStatementReport, ReportParams } from '../../models/report.model';
 import { ClientResponse } from '../../models/client.model';
 
+/**
+ * Componente para generación de reportes
+ * Implementa OnDestroy para prevenir memory leaks
+ */
 @Component({
   selector: 'app-reports',
   standalone: true,
@@ -13,7 +19,7 @@ import { ClientResponse } from '../../models/client.model';
   templateUrl: './reports.component.html',
   styleUrls: ['./reports.component.css']
 })
-export class ReportsComponent {
+export class ReportsComponent implements OnInit, OnDestroy {
   clients: ClientResponse[] = [];
   reportParams: ReportParams = {
     clientId: 0,
@@ -27,6 +33,8 @@ export class ReportsComponent {
   searchTerm: string = '';
   errorMessage: string = '';
   isLoading: boolean = false;
+
+  private destroy$ = new Subject<void>();
 
   parseFloat(value: string): number {
     return parseFloat(value);
@@ -45,34 +53,37 @@ export class ReportsComponent {
 
   constructor(
     private reportService: ReportService,
-    private clientService: ClientService
-  ) {
+    private clientService: ClientService,
+    private notificationService: NotificationService
+  ) {}
+
+  ngOnInit(): void {
     this.loadClients();
   }
 
-  loadClients(): void {
-    this.clientService.getAllClients().subscribe({
-      next: (data) => {
-        this.clients = data;
-      },
-      error: (error) => {
-        console.error('Error loading clients:', error);
-      }
-    });
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
-  private extractErrorMessage(error: any): string {
-    if (error.error?.errors) {
-      const errors = error.error.errors;
-      const errorMessages = Object.keys(errors).map(key => `${errors[key]}`).join('<br>');
-      return errorMessages;
-    }
-    return error.error?.message || error.error?.error || 'Error al procesar la solicitud';
+  loadClients(): void {
+    this.clientService.getAllClients()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (data) => {
+          this.clients = data;
+        },
+        error: (error) => {
+          const errorMsg = this.notificationService.extractErrorMessage(error);
+          this.notificationService.error(errorMsg);
+        }
+      });
   }
 
   generateReport(): void {
     if (this.reportParams.clientId === 0) {
       this.errorMessage = 'Debe seleccionar un cliente';
+      this.notificationService.warning(this.errorMessage);
       return;
     }
 
@@ -87,23 +98,27 @@ export class ReportsComponent {
       endDate: this.formatDateForApi(this.reportParams.endDate)
     };
 
-    this.reportService.generateAccountStatement(params).subscribe({
-      next: (data) => {
-        if (this.reportParams.format === 'pdf') {
-          this.pdfData = data;
-        } else {
-          this.reportData = data;
-          this.filteredReportData = data;
-          this.searchTerm = '';
+    this.reportService.generateAccountStatement(params)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (data) => {
+          if (this.reportParams.format === 'pdf') {
+            this.pdfData = data;
+            this.notificationService.success('Reporte PDF generado exitosamente');
+          } else {
+            this.reportData = data;
+            this.filteredReportData = data;
+            this.searchTerm = '';
+            this.notificationService.success('Reporte generado exitosamente');
+          }
+          this.isLoading = false;
+        },
+        error: (error) => {
+          this.errorMessage = this.notificationService.extractErrorMessage(error);
+          this.notificationService.error(this.errorMessage);
+          this.isLoading = false;
         }
-        this.isLoading = false;
-      },
-      error: (error) => {
-        console.error('Error generating report:', error);
-        this.errorMessage = this.extractErrorMessage(error);
-        this.isLoading = false;
-      }
-    });
+      });
   }
 
   downloadPdf(): void {
@@ -124,9 +139,11 @@ export class ReportsComponent {
       link.download = `estado-cuenta-${this.reportParams.clientId}-${Date.now()}.pdf`;
       link.click();
       window.URL.revokeObjectURL(url);
+      this.notificationService.success('PDF descargado exitosamente');
     } catch (error) {
-      console.error('Error downloading PDF:', error);
-      this.errorMessage = 'Error al descargar el PDF';
+      const errorMsg = 'Error al descargar el PDF';
+      this.errorMessage = errorMsg;
+      this.notificationService.error(errorMsg);
     }
   }
 

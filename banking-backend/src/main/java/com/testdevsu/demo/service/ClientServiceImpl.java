@@ -28,30 +28,28 @@ public class ClientServiceImpl implements ClientService {
     @Transactional(readOnly = true)
     public ClientResponseDTO getClientById(Long id) {
         Client client = clientRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Client not found with id: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Cliente no encontrado con id: " + id));
         return mapToResponseDTO(client);
     }
 
     @Transactional
     public ClientResponseDTO createClient(ClientRequestDTO requestDTO) {
-        // Validar que la contraseña sea obligatoria al crear
         if (requestDTO.getPassword() == null || requestDTO.getPassword().trim().isEmpty()) {
-            throw new IllegalArgumentException("Password is required");
+            throw new IllegalArgumentException("La contraseña es requerida");
         }
-        
-        // Validar longitud de la contraseña
+
         if (requestDTO.getPassword().length() < 4 || requestDTO.getPassword().length() > 255) {
-            throw new IllegalArgumentException("Password must be between 4 and 255 characters");
+            throw new IllegalArgumentException("La contraseña debe tener entre 4 y 255 caracteres");
         }
-        
+
         // Validar que no exista clientId duplicado
         if (clientRepository.findByClientId(requestDTO.getClientId()).isPresent()) {
-            throw new DuplicateResourceException("Client already exists with clientId: " + requestDTO.getClientId());
+            throw new DuplicateResourceException("El cliente ya existe con clientId: " + requestDTO.getClientId());
         }
         
         // Validar que no exista identificación duplicada
         if (clientRepository.findByIdentification(requestDTO.getIdentification()).isPresent()) {
-            throw new DuplicateResourceException("Client already exists with identification: " + requestDTO.getIdentification());
+            throw new DuplicateResourceException("El cliente ya existe con identificación: " + requestDTO.getIdentification());
         }
 
         Client client = new Client();
@@ -72,7 +70,7 @@ public class ClientServiceImpl implements ClientService {
     @Transactional
     public ClientResponseDTO updateClient(Long id, ClientRequestDTO requestDTO) {
         Client client = clientRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Client not found with id: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Cliente no encontrado con id: " + id));
 
         client.setName(requestDTO.getName());
         client.setGender(requestDTO.getGender());
@@ -81,11 +79,9 @@ public class ClientServiceImpl implements ClientService {
         client.setAddress(requestDTO.getAddress());
         client.setPhone(requestDTO.getPhone());
         client.setClientId(requestDTO.getClientId());
-        // Solo actualizar la contraseña si viene informada (no vacía ni nula)
         if (requestDTO.getPassword() != null && !requestDTO.getPassword().trim().isEmpty()) {
-            // Validar longitud de la contraseña
             if (requestDTO.getPassword().length() < 4 || requestDTO.getPassword().length() > 255) {
-                throw new IllegalArgumentException("Password must be between 4 and 255 characters");
+                throw new IllegalArgumentException("La contraseña debe tener entre 4 y 255 caracteres");
             }
             client.setPassword(requestDTO.getPassword());
         }
@@ -98,7 +94,7 @@ public class ClientServiceImpl implements ClientService {
     @Transactional
     public ClientResponseDTO partialUpdateClient(Long id, ClientRequestDTO requestDTO) {
         Client client = clientRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Client not found with id: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Cliente no encontrado con id: " + id));
 
         if (requestDTO.getName() != null) client.setName(requestDTO.getName());
         if (requestDTO.getGender() != null) client.setGender(requestDTO.getGender());
@@ -107,11 +103,9 @@ public class ClientServiceImpl implements ClientService {
         if (requestDTO.getAddress() != null) client.setAddress(requestDTO.getAddress());
         if (requestDTO.getPhone() != null) client.setPhone(requestDTO.getPhone());
         if (requestDTO.getClientId() != null) client.setClientId(requestDTO.getClientId());
-        // Solo actualizar la contraseña si viene informada y no está vacía
         if (requestDTO.getPassword() != null && !requestDTO.getPassword().trim().isEmpty()) {
-            // Validar longitud de la contraseña
             if (requestDTO.getPassword().length() < 4 || requestDTO.getPassword().length() > 255) {
-                throw new IllegalArgumentException("Password must be between 4 and 255 characters");
+                throw new IllegalArgumentException("La contraseña debe tener entre 4 y 255 caracteres");
             }
             client.setPassword(requestDTO.getPassword());
         }
@@ -124,9 +118,8 @@ public class ClientServiceImpl implements ClientService {
     @Transactional
     public void deleteClient(Long id) {
         Client client = clientRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Client not found with id: " + id));
-        
-        // Eliminación lógica
+                .orElseThrow(() -> new ResourceNotFoundException("Cliente no encontrado con id: " + id));
+
         client.setStatus(false);
         clientRepository.save(client);
     }

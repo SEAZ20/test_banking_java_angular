@@ -1,6 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ClientsComponent } from './clients.component';
 import { ClientService } from '../../services/client.service';
+import { NotificationService } from '../../services/notification.service';
 import { of, throwError } from 'rxjs';
 import { ClientResponse } from '../../models/client.model';
 
@@ -8,6 +9,7 @@ describe('ClientsComponent', () => {
   let component: ClientsComponent;
   let fixture: ComponentFixture<ClientsComponent>;
   let mockClientService: jest.Mocked<ClientService>;
+  let mockNotificationService: jest.Mocked<NotificationService>;
 
   const mockClients: ClientResponse[] = [
     {
@@ -43,10 +45,21 @@ describe('ClientsComponent', () => {
       deleteClient: jest.fn()
     } as any;
 
+    mockNotificationService = {
+      success: jest.fn(),
+      error: jest.fn(),
+      warning: jest.fn(),
+      info: jest.fn(),
+      confirm: jest.fn(),
+      alert: jest.fn(),
+      extractErrorMessage: jest.fn().mockReturnValue('Error message')
+    } as any;
+
     await TestBed.configureTestingModule({
       imports: [ClientsComponent],
       providers: [
-        { provide: ClientService, useValue: mockClientService }
+        { provide: ClientService, useValue: mockClientService },
+        { provide: NotificationService, useValue: mockNotificationService }
       ]
     }).compileComponents();
 
@@ -165,27 +178,27 @@ describe('ClientsComponent', () => {
     });
 
     it('should handle error when creating client', () => {
-      const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation();
       const errorResponse = { 
         error: { 
           errors: { name: 'Name is required' } 
         } 
       };
+      mockNotificationService.extractErrorMessage.mockReturnValue('Name is required');
       mockClientService.createClient.mockReturnValue(throwError(() => errorResponse));
       component.isEditMode = false;
 
       component.saveClient();
 
       expect(component.errorMessage).toContain('Name is required');
-      consoleErrorSpy.mockRestore();
+      expect(mockNotificationService.extractErrorMessage).toHaveBeenCalledWith(errorResponse);
     });
   });
 
   describe('deleteClient', () => {
     it('should delete client successfully', () => {
+      mockNotificationService.confirm.mockReturnValue(true);
       mockClientService.deleteClient.mockReturnValue(of(void 0));
       mockClientService.getAllClients.mockReturnValue(of([mockClients[1]]));
-      window.confirm = jest.fn(() => true);
 
       component.deleteClient(mockClients[0]);
 
@@ -193,7 +206,7 @@ describe('ClientsComponent', () => {
     });
 
     it('should not delete client when user cancels', () => {
-      window.confirm = jest.fn(() => false);
+      mockNotificationService.confirm.mockReturnValue(false);
 
       component.deleteClient(mockClients[0]);
 
@@ -210,6 +223,99 @@ describe('ClientsComponent', () => {
 
       expect(component.showModal).toBe(false);
       expect(component.errorMessage).toBe('');
+    });
+  });
+
+  describe('ngOnDestroy', () => {
+    it('should complete destroy$ subject', () => {
+      const destroySpy = jest.spyOn(component['destroy$'], 'next');
+      const completeSpy = jest.spyOn(component['destroy$'], 'complete');
+
+      component.ngOnDestroy();
+
+      expect(destroySpy).toHaveBeenCalled();
+      expect(completeSpy).toHaveBeenCalled();
+    });
+
+    it('should unsubscribe from observables on destroy', () => {
+      mockClientService.getAllClients.mockReturnValue(of(mockClients));
+      component.ngOnInit();
+
+      const destroySpy = jest.spyOn(component['destroy$'], 'next');
+      component.ngOnDestroy();
+
+      expect(destroySpy).toHaveBeenCalled();
+    });
+  });
+
+  describe('NotificationService integration', () => {
+    it('should call notification service on successful create', () => {
+      const newClient = { ...mockClients[0], id: 3 } as any;
+      mockClientService.createClient.mockReturnValue(of(newClient));
+      mockClientService.getAllClients.mockReturnValue(of([...mockClients, newClient]));
+
+      component.selectedClient = newClient;
+      component.isEditMode = false;
+      component.saveClient();
+
+      expect(mockNotificationService.success).toHaveBeenCalledWith('Cliente creado exitosamente');
+    });
+
+    it('should call notification service on successful update', () => {
+      const updatedClient = { ...mockClients[0] };
+      mockClientService.updateClient.mockReturnValue(of(updatedClient as any));
+      mockClientService.getAllClients.mockReturnValue(of(mockClients));
+
+      component.clients = mockClients;
+      component.selectedClient = updatedClient as any;
+      component.isEditMode = true;
+      component.saveClient();
+
+      expect(mockNotificationService.success).toHaveBeenCalledWith('Cliente actualizado exitosamente');
+    });
+
+    it('should call notification service on error', () => {
+      const error = { error: { message: 'Validation error' } };
+      mockClientService.createClient.mockReturnValue(throwError(() => error));
+
+      component.selectedClient = mockClients[0] as any;
+      component.isEditMode = false;
+      component.saveClient();
+
+      expect(mockNotificationService.error).toHaveBeenCalled();
+      expect(mockNotificationService.extractErrorMessage).toHaveBeenCalledWith(error);
+    });
+
+    it('should use notification service confirm instead of window.confirm', () => {
+      mockNotificationService.confirm.mockReturnValue(true);
+      mockClientService.deleteClient.mockReturnValue(of(void 0));
+      mockClientService.getAllClients.mockReturnValue(of(mockClients));
+
+      component.deleteClient(mockClients[0]);
+
+      expect(mockNotificationService.confirm).toHaveBeenCalledWith(
+        `¿Está seguro de eliminar el cliente ${mockClients[0].name}?`
+      );
+    });
+
+    it('should call notification service on successful delete', () => {
+      mockNotificationService.confirm.mockReturnValue(true);
+      mockClientService.deleteClient.mockReturnValue(of(void 0));
+      mockClientService.getAllClients.mockReturnValue(of([mockClients[1]]));
+
+      component.deleteClient(mockClients[0]);
+
+      expect(mockNotificationService.success).toHaveBeenCalledWith('Cliente eliminado exitosamente');
+    });
+
+    it('should handle error when loading clients', () => {
+      const error = { error: { message: 'Network error' } };
+      mockClientService.getAllClients.mockReturnValue(throwError(() => error));
+
+      component.loadClients();
+
+      expect(mockNotificationService.error).toHaveBeenCalled();
+      expect(mockNotificationService.extractErrorMessage).toHaveBeenCalledWith(error);
     });
   });
 });

@@ -2,11 +2,12 @@ import { TestBed } from '@angular/core/testing';
 import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
 import { AccountService } from './account.service';
 import { AccountRequest, AccountResponse } from '../models/account.model';
+import { environment } from '../../environments/environment';
 
 describe('AccountService', () => {
   let service: AccountService;
   let httpMock: HttpTestingController;
-  const apiUrl = 'http://localhost:8080/accounts';
+  const apiUrl = `${environment.apiUrl}/accounts`;
 
   beforeEach(() => {
     TestBed.configureTestingModule({

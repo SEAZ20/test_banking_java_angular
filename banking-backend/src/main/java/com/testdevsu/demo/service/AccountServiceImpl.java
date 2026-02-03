@@ -34,7 +34,7 @@ public class AccountServiceImpl implements AccountService {
     @Transactional(readOnly = true)
     public AccountResponseDTO getAccountById(Long id) {
         Account account = accountRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Account not found with id: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Cuenta no encontrada con id: " + id));
         return mapToResponseDTO(account);
     }
 
@@ -42,11 +42,11 @@ public class AccountServiceImpl implements AccountService {
     public AccountResponseDTO createAccount(AccountRequestDTO requestDTO) {
 
         if (accountRepository.findByAccountNumber(requestDTO.getAccountNumber()).isPresent()) {
-            throw new DuplicateResourceException("Account already exists with accountNumber: " + requestDTO.getAccountNumber());
+            throw new DuplicateResourceException("La cuenta ya existe con el número: " + requestDTO.getAccountNumber());
         }
 
         Client client = clientRepository.findById(requestDTO.getClientId())
-                .orElseThrow(() -> new ResourceNotFoundException("Client not found with id: " + requestDTO.getClientId()));
+                .orElseThrow(() -> new ResourceNotFoundException("Cliente no encontrado con id: " + requestDTO.getClientId()));
 
         Account account = new Account();
         account.setAccountNumber(requestDTO.getAccountNumber());
@@ -62,10 +62,10 @@ public class AccountServiceImpl implements AccountService {
     @Transactional
     public AccountResponseDTO updateAccount(Long id, AccountRequestDTO requestDTO) {
         Account account = accountRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Account not found with id: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Cuenta no encontrada con id: " + id));
 
         Client client = clientRepository.findById(requestDTO.getClientId())
-                .orElseThrow(() -> new ResourceNotFoundException("Client not found with id: " + requestDTO.getClientId()));
+                .orElseThrow(() -> new ResourceNotFoundException("Cliente no encontrado con id: " + requestDTO.getClientId()));
 
         account.setAccountNumber(requestDTO.getAccountNumber());
         account.setAccountType(requestDTO.getAccountType());
@@ -80,7 +80,7 @@ public class AccountServiceImpl implements AccountService {
     @Transactional
     public AccountResponseDTO partialUpdateAccount(Long id, AccountRequestDTO requestDTO) {
         Account account = accountRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Account not found with id: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Cuenta no encontrada con id: " + id));
 
         if (requestDTO.getAccountNumber() != null) account.setAccountNumber(requestDTO.getAccountNumber());
         if (requestDTO.getAccountType() != null) account.setAccountType(requestDTO.getAccountType());
@@ -89,7 +89,7 @@ public class AccountServiceImpl implements AccountService {
         
         if (requestDTO.getClientId() != null) {
             Client client = clientRepository.findById(requestDTO.getClientId())
-                    .orElseThrow(() -> new ResourceNotFoundException("Client not found with id: " + requestDTO.getClientId()));
+                    .orElseThrow(() -> new ResourceNotFoundException("Cliente no encontrado con id: " + requestDTO.getClientId()));
             account.setClient(client);
         }
 
@@ -100,7 +100,7 @@ public class AccountServiceImpl implements AccountService {
     @Transactional
     public void deleteAccount(Long id) {
         Account account = accountRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Account not found with id: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Cuenta no encontrada con id: " + id));
         account.setStatus(false);
         accountRepository.save(account);
     }

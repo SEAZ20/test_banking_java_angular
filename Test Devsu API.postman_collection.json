@@ -1,9 +1,10 @@
 {
 	"info": {
-		"_postman_id": "12345678-1234-1234-1234-123456789012",
+		"_postman_id": "ab87a35e-cd44-47e1-8c0b-90a1cfe41c91",
 		"name": "Test Devsu API",
 		"description": "API REST para gestión de clientes, cuentas y movimientos bancarios",
-		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "8326030"
 	},
 	"item": [
 		{
@@ -16,10 +17,15 @@
 						"header": [],
 						"url": {
 							"raw": "{{baseUrl}}/clients",
-							"host": ["{{baseUrl}}"],
-							"path": ["clients"]
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"clients"
+							]
 						}
-					}
+					},
+					"response": []
 				},
 				{
 					"name": "Get Client By ID",
@@ -28,10 +34,16 @@
 						"header": [],
 						"url": {
 							"raw": "{{baseUrl}}/clients/1",
-							"host": ["{{baseUrl}}"],
-							"path": ["clients", "1"]
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"clients",
+								"1"
+							]
 						}
-					}
+					},
+					"response": []
 				},
 				{
 					"name": "Create Client",
@@ -49,10 +61,15 @@
 						},
 						"url": {
 							"raw": "{{baseUrl}}/clients",
-							"host": ["{{baseUrl}}"],
-							"path": ["clients"]
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"clients"
+							]
 						}
-					}
+					},
+					"response": []
 				},
 				{
 					"name": "Update Client (PUT)",
@@ -66,14 +83,20 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"name\": \"Jose Lema Actualizado\",\n  \"gender\": \"Male\",\n  \"age\": 31,\n  \"identification\": \"1234567890\",\n  \"address\": \"Otavalo sn y principal - Actualizado\",\n  \"phone\": \"098254786\",\n  \"clientId\": \"jose.lema\",\n  \"password\": \"newpass123\",\n  \"status\": true\n}"
+							"raw": "{\n  \"name\": \"Jose Lema Actualizado\",\n  \"gender\": \"Masculino\",\n  \"age\": 31,\n  \"identification\": \"1234567890\",\n  \"address\": \"Otavalo sn y principal - Actualizado\",\n  \"phone\": \"098254786\",\n  \"clientId\": \"jose.lema\",\n  \"password\": \"newpass123\",\n  \"status\": true\n}"
 						},
 						"url": {
 							"raw": "{{baseUrl}}/clients/1",
-							"host": ["{{baseUrl}}"],
-							"path": ["clients", "1"]
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"clients",
+								"1"
+							]
 						}
-					}
+					},
+					"response": []
 				},
 				{
 					"name": "Partial Update Client (PATCH)",
@@ -91,10 +114,16 @@
 						},
 						"url": {
 							"raw": "{{baseUrl}}/clients/1",
-							"host": ["{{baseUrl}}"],
-							"path": ["clients", "1"]
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"clients",
+								"1"
+							]
 						}
-					}
+					},
+					"response": []
 				},
 				{
 					"name": "Delete Client",
@@ -103,10 +132,16 @@
 						"header": [],
 						"url": {
 							"raw": "{{baseUrl}}/clients/1",
-							"host": ["{{baseUrl}}"],
-							"path": ["clients", "1"]
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"clients",
+								"1"
+							]
 						}
-					}
+					},
+					"response": []
 				}
 			]
 		},
@@ -120,10 +155,15 @@
 						"header": [],
 						"url": {
 							"raw": "{{baseUrl}}/accounts",
-							"host": ["{{baseUrl}}"],
-							"path": ["accounts"]
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"accounts"
+							]
 						}
-					}
+					},
+					"response": []
 				},
 				{
 					"name": "Get Account By ID",
@@ -132,10 +172,16 @@
 						"header": [],
 						"url": {
 							"raw": "{{baseUrl}}/accounts/1",
-							"host": ["{{baseUrl}}"],
-							"path": ["accounts", "1"]
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"accounts",
+								"1"
+							]
 						}
-					}
+					},
+					"response": []
 				},
 				{
 					"name": "Create Account",
@@ -153,10 +199,15 @@
 						},
 						"url": {
 							"raw": "{{baseUrl}}/accounts",
-							"host": ["{{baseUrl}}"],
-							"path": ["accounts"]
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"accounts"
+							]
 						}
-					}
+					},
+					"response": []
 				},
 				{
 					"name": "Create Account - Corriente",
@@ -174,10 +225,15 @@
 						},
 						"url": {
 							"raw": "{{baseUrl}}/accounts",
-							"host": ["{{baseUrl}}"],
-							"path": ["accounts"]
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"accounts"
+							]
 						}
-					}
+					},
+					"response": []
 				},
 				{
 					"name": "Update Account (PUT)",
@@ -195,10 +251,16 @@
 						},
 						"url": {
 							"raw": "{{baseUrl}}/accounts/1",
-							"host": ["{{baseUrl}}"],
-							"path": ["accounts", "1"]
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"accounts",
+								"1"
+							]
 						}
-					}
+					},
+					"response": []
 				},
 				{
 					"name": "Partial Update Account (PATCH)",
@@ -216,10 +278,16 @@
 						},
 						"url": {
 							"raw": "{{baseUrl}}/accounts/1",
-							"host": ["{{baseUrl}}"],
-							"path": ["accounts", "1"]
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"accounts",
+								"1"
+							]
 						}
-					}
+					},
+					"response": []
 				},
 				{
 					"name": "Delete Account",
@@ -228,10 +296,16 @@
 						"header": [],
 						"url": {
 							"raw": "{{baseUrl}}/accounts/1",
-							"host": ["{{baseUrl}}"],
-							"path": ["accounts", "1"]
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"accounts",
+								"1"
+							]
 						}
-					}
+					},
+					"response": []
 				}
 			]
 		},
@@ -245,10 +319,15 @@
 						"header": [],
 						"url": {
 							"raw": "{{baseUrl}}/movements",
-							"host": ["{{baseUrl}}"],
-							"path": ["movements"]
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"movements"
+							]
 						}
-					}
+					},
+					"response": []
 				},
 				{
 					"name": "Get Movement By ID",
@@ -257,10 +336,16 @@
 						"header": [],
 						"url": {
 							"raw": "{{baseUrl}}/movements/1",
-							"host": ["{{baseUrl}}"],
-							"path": ["movements", "1"]
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"movements",
+								"1"
+							]
 						}
-					}
+					},
+					"response": []
 				},
 				{
 					"name": "Create Movement - Deposit",
@@ -278,10 +363,15 @@
 						},
 						"url": {
 							"raw": "{{baseUrl}}/movements",
-							"host": ["{{baseUrl}}"],
-							"path": ["movements"]
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"movements"
+							]
 						}
-					}
+					},
+					"response": []
 				},
 				{
 					"name": "Create Movement - Withdrawal",
@@ -299,10 +389,15 @@
 						},
 						"url": {
 							"raw": "{{baseUrl}}/movements",
-							"host": ["{{baseUrl}}"],
-							"path": ["movements"]
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"movements"
+							]
 						}
-					}
+					},
+					"response": []
 				},
 				{
 					"name": "Update Movement (PUT)",
@@ -320,10 +415,16 @@
 						},
 						"url": {
 							"raw": "{{baseUrl}}/movements/1",
-							"host": ["{{baseUrl}}"],
-							"path": ["movements", "1"]
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"movements",
+								"1"
+							]
 						}
-					}
+					},
+					"response": []
 				},
 				{
 					"name": "Partial Update Movement (PATCH)",
@@ -341,10 +442,16 @@
 						},
 						"url": {
 							"raw": "{{baseUrl}}/movements/1",
-							"host": ["{{baseUrl}}"],
-							"path": ["movements", "1"]
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"movements",
+								"1"
+							]
 						}
-					}
+					},
+					"response": []
 				},
 				{
 					"name": "Delete Movement",
@@ -353,10 +460,16 @@
 						"header": [],
 						"url": {
 							"raw": "{{baseUrl}}/movements/1",
-							"host": ["{{baseUrl}}"],
-							"path": ["movements", "1"]
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"movements",
+								"1"
+							]
 						}
-					}
+					},
+					"response": []
 				}
 			]
 		},
@@ -370,8 +483,12 @@
 						"header": [],
 						"url": {
 							"raw": "{{baseUrl}}/reportes?clientId=1&startDate=2026-01-01T00:00:00&endDate=2026-01-31T23:59:59&format=json",
-							"host": ["{{baseUrl}}"],
-							"path": ["reportes"],
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"reportes"
+							],
 							"query": [
 								{
 									"key": "clientId",
@@ -391,7 +508,8 @@
 								}
 							]
 						}
-					}
+					},
+					"response": []
 				},
 				{
 					"name": "Get Account Statement - PDF (Base64)",
@@ -400,8 +518,12 @@
 						"header": [],
 						"url": {
 							"raw": "{{baseUrl}}/reportes?clientId=1&startDate=2026-01-01T00:00:00&endDate=2026-01-31T23:59:59&format=pdf",
-							"host": ["{{baseUrl}}"],
-							"path": ["reportes"],
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"reportes"
+							],
 							"query": [
 								{
 									"key": "clientId",
@@ -421,7 +543,8 @@
 								}
 							]
 						}
-					}
+					},
+					"response": []
 				}
 			]
 		}
